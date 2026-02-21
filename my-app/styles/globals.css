@@ -1,26 +1,167 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-matcha-50: #f0fdf4;
+  --color-matcha-100: #dcfce7;
+  --color-matcha-200: #bbf7d0;
+  --color-matcha-300: #86efac;
+  --color-matcha-400: #4ade80;
+  --color-matcha-500: #4A7C59;
+  --color-matcha-600: #3d6b4a;
+  --color-matcha-700: #2d5236;
+  --color-matcha-800: #1a3a22;
+  --color-matcha-900: #0d2013;
+  --color-cream: #F5F0E1;
+  --color-cream-dark: #E8DFC8;
+  --color-bark: #3E2723;
+  --color-bark-light: #5D4037;
+  --font-sans: 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  background: var(--color-cream);
+  color: var(--color-bark);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-cream);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-matcha-500);
+  border-radius: 4px;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(74, 124, 89, 0.3); }
+  50% { box-shadow: 0 0 40px rgba(74, 124, 89, 0.6); }
+}
+
+@keyframes steam {
+  0% { opacity: 0; transform: translateY(0) scale(1); }
+  50% { opacity: 0.6; }
+  100% { opacity: 0; transform: translateY(-40px) scale(1.5); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.6s ease-out forwards;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.steam-particle {
+  animation: steam 2s ease-out infinite;
+}
+
+/* Card styles */
+.game-card {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e5e1d5;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease;
+}
+
+.game-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.game-card-selected {
+  border-color: var(--color-matcha-500);
+  box-shadow: 0 0 0 2px var(--color-matcha-500);
+}
+
+/* Button styles */
+.btn-matcha {
+  background: var(--color-matcha-500);
+  color: white;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: none;
+}
+
+.btn-matcha:hover {
+  background: var(--color-matcha-600);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(74, 124, 89, 0.3);
+}
+
+.btn-matcha:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--color-matcha-500);
+  border: 2px solid var(--color-matcha-500);
+  padding: 8px 22px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.btn-outline:hover {
+  background: var(--color-matcha-50);
+}
+
+/* Progress bar */
+.progress-bar {
+  height: 8px;
+  border-radius: 4px;
+  background: #e5e7eb;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+/* Star rating */
+.star-filled {
+  color: #f59e0b;
+}
+.star-empty {
+  color: #d1d5db;
+}
+
+/* Notification badge */
+.notification-dot {
+  width: 8px;
+  height: 8px;
+  background: #ef4444;
+  border-radius: 50%;
+  position: absolute;
+  top: -2px;
+  right: -2px;
 }
