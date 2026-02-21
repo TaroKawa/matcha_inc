@@ -90,7 +90,7 @@ export default function NewStorePage() {
       { interiorTheme: interior, equipment, hasWifi, hasBgm, seatCount },
       menu,
     );
-    router.push('/dashboard');
+    router.push('/city');
   };
 
   return (

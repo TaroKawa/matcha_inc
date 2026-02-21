@@ -81,17 +81,25 @@ export default function DashboardPage() {
         {/* Week Header */}
         <div className="flex items-center justify-between">
           <div>
+            <div className="flex items-center gap-2 mb-1">
+              <Link href="/city" className="text-matcha-500 hover:text-matcha-600 text-sm">← マップに戻る</Link>
+            </div>
             <h1 className="text-2xl font-bold text-matcha-700">
               📊 ダッシュボード
             </h1>
             <p className="text-bark-light text-sm">{PHASE_NAMES[gamePhase]} — Week {currentWeek}</p>
           </div>
-          <button
-            onClick={nextWeek}
-            className="btn-matcha px-6 py-3 text-lg shadow-lg animate-pulse-glow"
-          >
-            ⏭️ 次の週へ進む
-          </button>
+          <div className="flex items-center gap-3">
+            <Link href="/city" className="btn-outline text-sm px-4 py-2">
+              🗺️ マップ
+            </Link>
+            <button
+              onClick={nextWeek}
+              className="btn-matcha px-6 py-3 text-lg shadow-lg animate-pulse-glow"
+            >
+              ⏭️ 次の週へ進む
+            </button>
+          </div>
         </div>
 
         {/* Notifications */}

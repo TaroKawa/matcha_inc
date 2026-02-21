@@ -24,7 +24,7 @@ export default function Home() {
   };
 
   const handleContinue = () => {
-    router.push('/dashboard');
+    router.push('/city');
   };
 
   if (!hydrated) return null;

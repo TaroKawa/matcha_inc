@@ -30,7 +30,7 @@ export default function RegisterPage() {
       logoIndex,
       initialCapital: preset.capital,
     });
-    router.push('/dashboard');
+    router.push('/city');
   };
 
   return (
