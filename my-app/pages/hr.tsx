@@ -37,7 +37,12 @@ export default function HRPage() {
   const handleGenerateApplicants = async () => {
     setIsGenerating(true);
     try {
-      const res = await fetch('/api/generate-applicant', { method: 'POST' });
+      const existingNames = [...employees, ...applicants].map(e => e.name);
+      const res = await fetch('/api/generate-applicant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ existingNames }),
+      });
       if (res.ok) {
         const profile = await res.json();
         const id = `emp-${Math.random().toString(36).substring(2, 9)}`;
@@ -60,24 +65,6 @@ export default function HRPage() {
     setModal('resume');
     if (emp.hiringStatus === 'new') {
       store.updateApplicant(emp.id, { hiringStatus: 'resume_viewed' });
-    }
-    // 履歴書が空の場合、自動でAI生成
-    if (!emp.resume || !emp.hiddenPersonality) {
-      setIsLoadingResume(true);
-      try {
-        const res = await fetch('/api/generate-applicant', { method: 'POST' });
-        if (res.ok) {
-          const profile = await res.json();
-          const updates = {
-            resume: profile.resume || '',
-            hiddenPersonality: profile.hiddenPersonality || '',
-            personality: profile.personality || emp.personality,
-          };
-          store.updateApplicant(emp.id, updates);
-          setSelectedEmp({ ...emp, ...updates, hiringStatus: emp.hiringStatus === 'new' ? 'resume_viewed' : emp.hiringStatus });
-        }
-      } catch (e) { console.error(e); }
-      setIsLoadingResume(false);
     }
   };
 

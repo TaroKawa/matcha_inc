@@ -11,7 +11,12 @@ import {
   MenuItem,
   GamePhase,
 } from '@/types/game';
-import { EQUIPMENT_DATA, INTERIOR_DATA } from './gameData';
+import {
+  EQUIPMENT_DATA,
+  INTERIOR_DATA,
+  EMPLOYEE_RESUMES,
+  EMPLOYEE_HIDDEN_PERSONALITIES,
+} from './gameData';
 
 // --- Utility ---
 function randomBetween(min: number, max: number): number {
@@ -471,8 +476,8 @@ export function generateRandomEmployee(
     age: randomBetween(18, 55),
     background: backgrounds[Math.floor(Math.random() * backgrounds.length)],
     personality: personalities[Math.floor(Math.random() * personalities.length)],
-    hiddenPersonality: '', // Will be filled by Gemini
-    resume: '', // Will be filled by Gemini
+    hiddenPersonality: EMPLOYEE_HIDDEN_PERSONALITIES[Math.floor(Math.random() * EMPLOYEE_HIDDEN_PERSONALITIES.length)],
+    resume: EMPLOYEE_RESUMES[Math.floor(Math.random() * EMPLOYEE_RESUMES.length)],
     role: Math.random() > 0.8 ? 'manager' : 'barista',
     skill: randomBetween(20, 80),
     speed: randomBetween(30, 90),

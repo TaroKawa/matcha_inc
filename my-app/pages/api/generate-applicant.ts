@@ -11,7 +11,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const profile = await generateFullApplicantProfile();
+    const { existingNames } = req.body;
+    const profile = await generateFullApplicantProfile(Array.isArray(existingNames) ? existingNames : []);
     res.status(200).json(profile);
   } catch (error) {
     console.error('Generate applicant failed:', error);
