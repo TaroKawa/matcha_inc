@@ -43,9 +43,11 @@ export default function StoreDetailPage() {
   if (!store) {
     return (
       <Layout>
-        <div className="game-card p-8 text-center">
-          <p className="text-bark-light">店舗が見つかりません</p>
-          <button onClick={() => router.push('/city')} className="btn-matcha mt-4">マップへ戻る</button>
+        <div className="game-card p-12 text-center max-w-lg mx-auto mt-10">
+          <span className="text-4xl block mb-4">🏪</span>
+          <h2 className="text-xl font-bold text-gray-800 mb-2">店舗が見つかりません</h2>
+          <p className="text-gray-500 mb-6">指定されたIDの店舗は存在しないか、閉店しました。</p>
+          <button onClick={() => router.push('/city')} className="btn-matcha">マップへ戻る</button>
         </div>
       </Layout>
     );
@@ -57,6 +59,7 @@ export default function StoreDetailPage() {
   const unassignedEmployees = employees.filter(e => !e.assignedStoreId);
   const eqData = EQUIPMENT_DATA[store.setup.equipment];
   const intData = INTERIOR_DATA[store.setup.interiorTheme];
+  // Note: Marketing campaigns are currently global (company-wide), not per-store.
   const activeCampaigns = campaigns.filter(c => c.isActive);
 
   const handleGenerateReviews = async () => {
@@ -64,15 +67,20 @@ export default function StoreDetailPage() {
     try {
       const gameState = useGameStore.getState();
       const reviews = await generateReviews(store, gameState);
-      const formattedReviews = reviews.map((r, i) => ({
-        id: `review-${store.id}-${gameState.currentWeek}-${i}`,
-        storeId: store.id,
-        customerName: r.customerName,
-        rating: r.rating,
-        comment: r.comment,
-        week: gameState.currentWeek,
-      }));
-      addReviewsToStore(store.id, formattedReviews);
+      // Ensure reviews is an array before mapping
+      if (Array.isArray(reviews)) {
+          const formattedReviews = reviews.map((r, i) => ({
+            id: `review-${store.id}-${gameState.currentWeek}-${i}`,
+            storeId: store.id,
+            customerName: r.customerName,
+            rating: r.rating,
+            comment: r.comment,
+            week: gameState.currentWeek,
+          }));
+          addReviewsToStore(store.id, formattedReviews);
+      } else {
+          console.error("Generated reviews is not an array:", reviews);
+      }
     } catch (err) {
       console.error(err);
     }
@@ -83,104 +91,216 @@ export default function StoreDetailPage() {
 
   return (
     <Layout>
-      <div className="space-y-4">
-        {/* Header */}
-        <div className="flex items-start justify-between">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <Link href="/city" className="text-matcha-500 hover:text-matcha-600 text-sm">← マップ</Link>
+      <div className="space-y-6 pb-12">
+        {/* Header Card */}
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+          <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <Link href="/city" className="text-xs font-bold text-gray-400 hover:text-matcha-600 flex items-center gap-1 transition-colors">
+                  <span>←</span> Back to Map
+                </Link>
+                <span className="text-gray-300">|</span>
+                <span className="text-xs font-bold text-matcha-600 bg-matcha-50 px-2 py-0.5 rounded-full border border-matcha-100">
+                  Week {store.openedWeek} 開店
+                </span>
+              </div>
+              <h1 className="text-3xl font-black text-gray-800 tracking-tight mb-1 flex items-center gap-3">
+                {store.name}
+                <span className="text-2xl">{area?.icon}</span>
+              </h1>
+              <p className="text-gray-500 text-sm flex items-center gap-2">
+                <span className="font-bold">{area?.name}</span>
+                <span className="w-1 h-1 rounded-full bg-gray-300"></span>
+                <span>{property?.name}</span>
+              </p>
             </div>
-            <h1 className="text-2xl font-bold text-matcha-700">🏪 {store.name}</h1>
-            <p className="text-bark-light text-sm">{area?.icon} {area?.name} | Week {store.openedWeek}に開店</p>
-          </div>
-          <div className="text-right">
-            <p className="text-xs text-bark-light">顧客満足度</p>
-            <p className={`text-3xl font-bold ${store.customerSatisfaction >= 60 ? 'text-green-600' : store.customerSatisfaction >= 40 ? 'text-yellow-600' : 'text-red-600'}`}>
-              {store.customerSatisfaction}%
-            </p>
-          </div>
-        </div>
-
-        {/* Tabs */}
-        <div className="flex overflow-x-auto border-b border-cream-dark -mx-4 px-4">
-          {TABS.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`store-tab ${activeTab === tab.id ? 'store-tab-active' : ''}`}
-            >
-              {tab.icon} {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* === Tab: Overview === */}
-        {activeTab === 'overview' && (
-          <div className="space-y-4 animate-fade-in">
-            {/* Stats Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="game-card p-4">
-                <p className="text-xs text-bark-light">👥 週間来客</p>
-                <p className="text-xl font-bold text-matcha-700">{store.weeklyCustomers}人</p>
+            
+            <div className="flex items-center gap-6 bg-gray-50 p-4 rounded-xl border border-gray-100">
+              <div className="text-center">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Satisfaction</p>
+                <div className="flex items-center gap-1 justify-center">
+                  <span className={`text-2xl font-black ${store.customerSatisfaction >= 60 ? 'text-green-600' : store.customerSatisfaction >= 40 ? 'text-yellow-600' : 'text-red-600'}`}>
+                    {store.customerSatisfaction}%
+                  </span>
+                  <span className="text-lg">😊</span>
+                </div>
               </div>
-              <div className="game-card p-4">
-                <p className="text-xs text-bark-light">💰 週間売上</p>
-                <p className="text-xl font-bold text-green-600">{formatMoney(store.weeklyRevenue)}</p>
-              </div>
-              <div className="game-card p-4">
-                <p className="text-xs text-bark-light">📉 週間支出</p>
-                <p className="text-xl font-bold text-red-500">{formatMoney(store.weeklyExpenses)}</p>
-              </div>
-              <div className="game-card p-4">
-                <p className="text-xs text-bark-light">💹 週間利益</p>
-                <p className={`text-xl font-bold ${store.weeklyRevenue - store.weeklyExpenses >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              <div className="w-px h-8 bg-gray-200"></div>
+              <div className="text-center">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Weekly Profit</p>
+                <p className={`text-xl font-black ${store.weeklyRevenue - store.weeklyExpenses >= 0 ? 'text-matcha-600' : 'text-red-500'}`}>
                   {formatMoney(store.weeklyRevenue - store.weeklyExpenses)}
                 </p>
               </div>
             </div>
+          </div>
+        </div>
 
-            {/* Store Details */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Setup Info */}
-              <div className="game-card p-5">
-                <h2 className="font-bold text-matcha-700 mb-3">🏗️ 店舗情報</h2>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between"><span className="text-bark-light">物件</span><span>{property?.name}</span></div>
-                  <div className="flex justify-between"><span className="text-bark-light">家賃/月</span><span>{formatMoney(property?.rent || 0)}</span></div>
-                  <div className="flex justify-between"><span className="text-bark-light">内装</span><span>{intData.icon} {intData.name}</span></div>
-                  <div className="flex justify-between"><span className="text-bark-light">設備</span><span>{eqData.icon} {eqData.name}</span></div>
-                  <div className="flex justify-between"><span className="text-bark-light">座席</span><span>{store.setup.seatCount}席</span></div>
-                  <div className="flex justify-between"><span className="text-bark-light">Wi-Fi</span><span>{store.setup.hasWifi ? '✅' : '❌'}</span></div>
-                  <div className="flex justify-between"><span className="text-bark-light">BGM</span><span>{store.setup.hasBgm ? '✅' : '❌'}</span></div>
+        {/* Tab Navigation */}
+        <div className="border-b border-gray-200">
+          <div className="flex overflow-x-auto gap-6 no-scrollbar pb-1">
+            {TABS.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 pb-3 text-sm font-bold whitespace-nowrap transition-all relative ${
+                  activeTab === tab.id 
+                    ? 'text-matcha-600' 
+                    : 'text-gray-400 hover:text-gray-600'
+                }`}
+              >
+                <span className="text-lg">{tab.icon}</span>
+                {tab.label}
+                {activeTab === tab.id && (
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-matcha-600 rounded-t-full"></span>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* === Tab: Overview === */}
+        {activeTab === 'overview' && (
+          <div className="space-y-6 animate-fade-in">
+            {/* KPI Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="game-card p-4 bg-white hover:border-matcha-200 transition-colors">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="p-1.5 rounded-md bg-blue-50 text-blue-600">👥</span>
+                  <span className="text-[10px] font-bold text-gray-400 uppercase">Customers</span>
+                </div>
+                <p className="text-2xl font-black text-gray-800">{store.weeklyCustomers}</p>
+                <p className="text-xs text-gray-400">per week</p>
+              </div>
+              <div className="game-card p-4 bg-white hover:border-matcha-200 transition-colors">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="p-1.5 rounded-md bg-green-50 text-green-600">💰</span>
+                  <span className="text-[10px] font-bold text-gray-400 uppercase">Revenue</span>
+                </div>
+                <p className="text-2xl font-black text-gray-800">{formatMoney(store.weeklyRevenue)}</p>
+                <p className="text-xs text-gray-400">per week</p>
+              </div>
+              <div className="game-card p-4 bg-white hover:border-matcha-200 transition-colors">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="p-1.5 rounded-md bg-red-50 text-red-600">💸</span>
+                  <span className="text-[10px] font-bold text-gray-400 uppercase">Expenses</span>
+                </div>
+                <p className="text-2xl font-black text-gray-800">{formatMoney(store.weeklyExpenses)}</p>
+                <p className="text-xs text-gray-400">per week</p>
+              </div>
+              <div className="game-card p-4 bg-white hover:border-matcha-200 transition-colors">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="p-1.5 rounded-md bg-matcha-50 text-matcha-600">💹</span>
+                  <span className="text-[10px] font-bold text-gray-400 uppercase">Profit</span>
+                </div>
+                <p className={`text-2xl font-black ${store.weeklyRevenue - store.weeklyExpenses >= 0 ? 'text-matcha-600' : 'text-red-500'}`}>
+                  {formatMoney(store.weeklyRevenue - store.weeklyExpenses)}
+                </p>
+                <p className="text-xs text-gray-400">Net Income</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Store Specs */}
+              <div className="game-card p-6">
+                <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                  <span className="w-1.5 h-5 bg-gray-800 rounded-full"></span>
+                  店舗スペック
+                </h2>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center p-3 rounded-xl bg-gray-50 border border-gray-100">
+                    <span className="text-xs font-bold text-gray-500">物件タイプ</span>
+                    <span className="text-sm font-bold text-gray-800">{property?.name}</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 rounded-xl bg-gray-50 border border-gray-100">
+                    <span className="text-xs font-bold text-gray-500">家賃 (月額)</span>
+                    <span className="text-sm font-bold text-gray-800">{formatMoney(property?.rent || 0)}</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 rounded-xl bg-gray-50 border border-gray-100">
+                    <span className="text-xs font-bold text-gray-500">内装テーマ</span>
+                    <span className="text-sm font-bold text-gray-800 flex items-center gap-1">
+                      <span>{intData.icon}</span> {intData.name}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 rounded-xl bg-gray-50 border border-gray-100">
+                    <span className="text-xs font-bold text-gray-500">設備グレード</span>
+                    <span className="text-sm font-bold text-gray-800 flex items-center gap-1">
+                      <span>{eqData.icon}</span> {eqData.name}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 mt-2">
+                    <div className="text-center p-2 rounded-lg bg-gray-50 border border-gray-100">
+                      <p className="text-[10px] text-gray-400">座席数</p>
+                      <p className="font-bold text-gray-800">{store.setup.seatCount}</p>
+                    </div>
+                    <div className="text-center p-2 rounded-lg bg-gray-50 border border-gray-100">
+                      <p className="text-[10px] text-gray-400">Wi-Fi</p>
+                      <p className="font-bold text-gray-800">{store.setup.hasWifi ? 'あり' : 'なし'}</p>
+                    </div>
+                    <div className="text-center p-2 rounded-lg bg-gray-50 border border-gray-100">
+                      <p className="text-[10px] text-gray-400">BGM</p>
+                      <p className="font-bold text-gray-800">{store.setup.hasBgm ? 'あり' : 'なし'}</p>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* Quick Employee Summary */}
-              <div className="game-card p-5">
-                <div className="flex items-center justify-between mb-3">
-                  <h2 className="font-bold text-matcha-700">👥 従業員 ({storeEmployees.length}人)</h2>
-                  <button onClick={() => setActiveTab('hr')} className="text-xs text-matcha-500 hover:underline">管理 →</button>
+              {/* Employees Summary */}
+              <div className="game-card p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="font-bold text-gray-800 flex items-center gap-2">
+                    <span className="w-1.5 h-5 bg-matcha-500 rounded-full"></span>
+                    スタッフ ({storeEmployees.length}人)
+                  </h2>
+                  <button onClick={() => setActiveTab('hr')} className="text-xs font-bold text-matcha-600 hover:underline">
+                    詳細管理 →
+                  </button>
                 </div>
+
                 {storeEmployees.length === 0 ? (
-                  <div className="text-center py-4">
-                    <p className="text-sm text-red-500 mb-2">⚠️ 従業員がいません</p>
-                    <button onClick={() => setActiveTab('hr')} className="btn-outline text-sm">人事タブへ</button>
+                  <div className="text-center py-8 px-4 bg-orange-50 rounded-xl border border-orange-100">
+                    <span className="text-3xl block mb-2">⚠️</span>
+                    <p className="text-sm font-bold text-orange-800 mb-1">スタッフがいません</p>
+                    <p className="text-xs text-orange-600 mb-3">店舗を運営するにはスタッフが必要です</p>
+                    <button onClick={() => setActiveTab('hr')} className="btn-matcha text-xs px-4 py-2">
+                      スタッフを配属する
+                    </button>
                   </div>
                 ) : (
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {storeEmployees.slice(0, 4).map((emp) => (
-                      <div key={emp.id} className="flex items-center justify-between text-sm bg-cream rounded-lg p-2">
-                        <div>
-                          <p className="font-medium">{emp.name}</p>
-                          <p className="text-xs text-bark-light">{emp.role === 'manager' ? '👔 マネージャー' : '🍵 バリスタ'}</p>
+                      <div key={emp.id} className="flex items-center justify-between p-3 bg-white border border-gray-100 rounded-xl shadow-sm">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${
+                            emp.role === 'manager' ? 'bg-indigo-100 text-indigo-600' : 'bg-matcha-100 text-matcha-600'
+                          }`}>
+                            {emp.role === 'manager' ? '👔' : '🍵'}
+                          </div>
+                          <div>
+                            <p className="font-bold text-sm text-gray-800">{emp.name}</p>
+                            <p className="text-[10px] text-gray-400">{emp.role === 'manager' ? 'Store Manager' : 'Barista'}</p>
+                          </div>
                         </div>
-                        <div className="text-right text-xs">
-                          <p>スキル: {emp.skill} | やる気: {emp.motivation}</p>
+                        <div className="flex items-center gap-2">
+                          <div className="text-right">
+                            <p className="text-[10px] text-gray-400">Skill</p>
+                            <p className="text-xs font-bold text-gray-700">{emp.skill}</p>
+                          </div>
+                          <div className="w-px h-6 bg-gray-100 mx-1"></div>
+                           <div className="text-right">
+                            <p className="text-[10px] text-gray-400">Motiv.</p>
+                            <p className={`text-xs font-bold ${emp.motivation > 70 ? 'text-green-600' : emp.motivation > 40 ? 'text-yellow-600' : 'text-red-600'}`}>
+                              {emp.motivation}
+                            </p>
+                          </div>
                         </div>
                       </div>
                     ))}
                     {storeEmployees.length > 4 && (
-                      <p className="text-xs text-bark-light text-center">...他{storeEmployees.length - 4}人</p>
+                      <button onClick={() => setActiveTab('hr')} className="w-full py-2 text-xs text-gray-400 hover:text-matcha-600 font-bold border border-dashed border-gray-300 rounded-lg hover:border-matcha-300 hover:bg-matcha-50 transition-colors">
+                        + 他 {storeEmployees.length - 4} 名を表示
+                      </button>
                     )}
                   </div>
                 )}
@@ -191,141 +311,175 @@ export default function StoreDetailPage() {
 
         {/* === Tab: HR (Per-Store) === */}
         {activeTab === 'hr' && (
-          <div className="space-y-4 animate-fade-in">
-            <div className="game-card p-5">
-              <h2 className="font-bold text-matcha-700 mb-1">👥 {store.name}の人事管理</h2>
-              <p className="text-xs text-bark-light mb-4">この店舗に配属されている従業員を管理します</p>
+          <div className="space-y-6 animate-fade-in">
+            <div className="game-card p-6">
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <h2 className="font-bold text-lg text-gray-800">人事管理</h2>
+                  <p className="text-xs text-gray-500">スタッフの配属・採用・解雇を行います</p>
+                </div>
+                <div className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">
+                  現在 {storeEmployees.length} 名
+                </div>
+              </div>
 
               {/* Current Store Employees */}
-              <h3 className="font-bold text-sm text-matcha-600 mb-2">📋 配属中の従業員 ({storeEmployees.length}人)</h3>
-              {storeEmployees.length === 0 ? (
-                <div className="bg-red-50 rounded-lg p-4 mb-4 text-center">
-                  <p className="text-sm text-red-600">⚠️ この店舗に従業員がいません。下の一覧から配属してください。</p>
-                </div>
-              ) : (
-                <div className="space-y-2 mb-4">
-                  {storeEmployees.map((emp) => (
-                    <div key={emp.id} className="bg-cream rounded-lg p-3">
-                      <div className="flex items-start justify-between mb-2">
-                        <div>
-                          <h4 className="font-bold text-sm">
-                            {emp.role === 'manager' ? '👔' : '🍵'} {emp.name}
-                            <span className="text-xs font-normal text-bark-light ml-2">
-                              {emp.age}歳 / {emp.role === 'manager' ? 'マネージャー' : 'バリスタ'}
-                            </span>
-                          </h4>
-                          <p className="text-xs text-bark-light">{emp.background}</p>
-                        </div>
-                        <span className="text-xs text-bark-light">¥{emp.hourlyWage}/h</span>
-                      </div>
-                      <div className="grid grid-cols-4 gap-2 text-xs mb-2">
-                        <div>
-                          <p className="text-bark-light">スキル</p>
-                          <div className="progress-bar mt-0.5"><div className="progress-bar-fill bg-blue-500" style={{ width: `${emp.skill}%` }} /></div>
-                          <p className="font-bold text-center">{emp.skill}</p>
-                        </div>
-                        <div>
-                          <p className="text-bark-light">スピード</p>
-                          <div className="progress-bar mt-0.5"><div className="progress-bar-fill bg-green-500" style={{ width: `${emp.speed}%` }} /></div>
-                          <p className="font-bold text-center">{emp.speed}</p>
-                        </div>
-                        <div>
-                          <p className="text-bark-light">やる気</p>
-                          <div className="progress-bar mt-0.5"><div className="progress-bar-fill bg-yellow-500" style={{ width: `${emp.motivation}%` }} /></div>
-                          <p className="font-bold text-center">{emp.motivation}</p>
-                        </div>
-                        <div>
-                          <p className="text-bark-light">疲労</p>
-                          <div className="progress-bar mt-0.5"><div className="progress-bar-fill bg-red-500" style={{ width: `${emp.fatigue}%` }} /></div>
-                          <p className="font-bold text-center">{emp.fatigue}</p>
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => assignEmployee(emp.id, null)}
-                          className="text-xs text-orange-600 border border-orange-300 rounded px-2 py-1 hover:bg-orange-50"
-                        >
-                          配属解除
-                        </button>
-                        <button
-                          onClick={() => fireEmployee(emp.id)}
-                          className="text-xs text-red-500 border border-red-300 rounded px-2 py-1 hover:bg-red-50"
-                        >
-                          解雇
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Unassigned employees */}
-              {unassignedEmployees.length > 0 && (
-                <>
-                  <h3 className="font-bold text-sm text-matcha-600 mb-2">🔄 未配属の従業員 ({unassignedEmployees.length}人)</h3>
-                  <div className="space-y-2 mb-4">
-                    {unassignedEmployees.map((emp) => (
-                      <div key={emp.id} className="bg-yellow-50 rounded-lg p-3 border border-yellow-200">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h4 className="font-bold text-sm">
-                              {emp.role === 'manager' ? '👔' : '🍵'} {emp.name}
-                              <span className="text-xs font-normal text-bark-light ml-1">
-                                スキル:{emp.skill} 速度:{emp.speed}
-                              </span>
-                            </h4>
+              <div className="mt-6">
+                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Assigned Staff</h3>
+                {storeEmployees.length === 0 ? (
+                  <div className="bg-gray-50 rounded-xl p-8 text-center border border-dashed border-gray-300">
+                    <p className="text-gray-400 text-sm">現在、この店舗に配属されているスタッフはいません</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {storeEmployees.map((emp) => (
+                      <div key={emp.id} className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+                        <div className="flex justify-between items-start mb-3">
+                          <div className="flex items-center gap-3">
+                             <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg ${
+                              emp.role === 'manager' ? 'bg-indigo-100 text-indigo-600' : 'bg-matcha-100 text-matcha-600'
+                            }`}>
+                              {emp.role === 'manager' ? '👔' : '🍵'}
+                            </div>
+                            <div>
+                              <h4 className="font-bold text-gray-800">{emp.name}</h4>
+                              <p className="text-xs text-gray-500">{emp.age}歳 / ¥{emp.hourlyWage}h</p>
+                            </div>
                           </div>
-                          <button
-                            onClick={() => assignEmployee(emp.id, store.id)}
-                            className="btn-matcha text-xs px-3 py-1"
-                          >
-                            この店舗に配属
-                          </button>
+                          <div className="flex gap-1">
+                            <button
+                              onClick={() => assignEmployee(emp.id, null)}
+                              className="p-1.5 text-gray-400 hover:text-orange-500 hover:bg-orange-50 rounded transition-colors"
+                              title="配属解除"
+                            >
+                              📤
+                            </button>
+                            <button
+                              onClick={() => fireEmployee(emp.id)}
+                              className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+                              title="解雇"
+                            >
+                              🗑️
+                            </button>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <div>
+                            <div className="flex justify-between text-[10px] text-gray-500 mb-0.5">
+                              <span>Skill</span>
+                              <span className="font-bold text-gray-700">{emp.skill}</span>
+                            </div>
+                            <div className="progress-bar h-1.5"><div className="progress-bar-fill bg-blue-500" style={{ width: `${emp.skill}%` }} /></div>
+                          </div>
+                          <div>
+                             <div className="flex justify-between text-[10px] text-gray-500 mb-0.5">
+                              <span>Motivation</span>
+                              <span className="font-bold text-gray-700">{emp.motivation}</span>
+                            </div>
+                            <div className="progress-bar h-1.5"><div className="progress-bar-fill bg-yellow-500" style={{ width: `${emp.motivation}%` }} /></div>
+                          </div>
                         </div>
                       </div>
                     ))}
                   </div>
-                </>
+                )}
+              </div>
+
+              {/* Unassigned employees */}
+              {unassignedEmployees.length > 0 && (
+                <div className="mt-8 pt-6 border-t border-gray-100">
+                  <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Available Staff (Unassigned)</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {unassignedEmployees.map((emp) => (
+                      <div key={emp.id} className="bg-yellow-50/50 border border-yellow-200 rounded-xl p-3 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                           <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${
+                            emp.role === 'manager' ? 'bg-indigo-100 text-indigo-600' : 'bg-matcha-100 text-matcha-600'
+                          }`}>
+                            {emp.role === 'manager' ? '👔' : '🍵'}
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-sm text-gray-800">{emp.name}</h4>
+                            <p className="text-[10px] text-gray-500">Sk:{emp.skill} / Sp:{emp.speed}</p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => assignEmployee(emp.id, store.id)}
+                          className="px-3 py-1.5 bg-matcha-600 text-white text-xs font-bold rounded-lg hover:bg-matcha-700 shadow-sm transition-colors"
+                        >
+                          配属する
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               )}
 
               {/* Applicants */}
-              <div className="border-t border-cream-dark pt-4">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-bold text-sm text-matcha-600">📝 応募者リスト ({applicants.length}人)</h3>
-                  <button onClick={() => generateApplicants(3)} className="btn-outline text-xs">
-                    🔄 新しい応募者
+              <div className="mt-8 pt-6 border-t border-gray-100">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">New Applicants</h3>
+                  <button 
+                    onClick={() => generateApplicants(3)} 
+                    className="text-xs font-bold text-matcha-600 hover:bg-matcha-50 px-3 py-1.5 rounded-lg transition-colors border border-matcha-100"
+                  >
+                    🔄 求人を出す
                   </button>
                 </div>
+                
                 {applicants.length === 0 ? (
-                  <p className="text-sm text-bark-light text-center py-3">応募者がいません</p>
+                  <p className="text-sm text-gray-400 text-center py-4 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                    現在、応募者はいません
+                  </p>
                 ) : (
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {applicants.slice(0, 5).map((app) => (
-                      <div key={app.id} className="bg-white rounded-lg p-3 border border-cream-dark">
-                        <div className="flex items-center justify-between mb-1">
-                          <div>
-                            <h4 className="font-bold text-sm">
-                              {app.role === 'manager' ? '👔' : '🍵'} {app.name}
-                              <span className="text-xs font-normal text-bark-light ml-1">
-                                {app.age}歳 | ¥{app.hourlyWage}/h
-                              </span>
-                            </h4>
-                            <p className="text-xs text-bark-light">{app.background} — {app.personality}</p>
+                      <div key={app.id} className="bg-white rounded-xl p-4 border border-gray-200 hover:border-matcha-300 transition-colors">
+                        <div className="flex justify-between items-start mb-2">
+                           <div className="flex items-center gap-3">
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg ${
+                              app.role === 'manager' ? 'bg-indigo-50 text-indigo-600 border border-indigo-100' : 'bg-matcha-50 text-matcha-600 border border-matcha-100'
+                            }`}>
+                              {app.role === 'manager' ? '👔' : '🍵'}
+                            </div>
+                            <div>
+                              <h4 className="font-bold text-sm text-gray-800 flex items-center gap-2">
+                                {app.name}
+                                <span className="text-[10px] font-normal bg-gray-100 px-1.5 py-0.5 rounded text-gray-500">{app.age}歳</span>
+                              </h4>
+                              <p className="text-xs text-gray-500 mt-0.5">{app.background}</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                             <p className="font-bold text-sm text-gray-800">¥{app.hourlyWage}<span className="text-[10px] font-normal text-gray-400">/h</span></p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2 text-xs mb-2">
-                          <span>スキル:{app.skill}</span>
-                          <span>速度:{app.speed}</span>
+                        
+                        <div className="bg-gray-50 rounded-lg p-2 text-xs text-gray-600 mb-3 flex items-center gap-2">
+                          <span className="font-bold text-gray-400">性格:</span> {app.personality}
                         </div>
+                        
+                        <div className="grid grid-cols-2 gap-2 text-xs mb-3">
+                           <div className="flex items-center justify-between bg-white border border-gray-100 rounded px-2 py-1">
+                             <span className="text-gray-400">Skill</span>
+                             <span className="font-bold">{app.skill}</span>
+                           </div>
+                           <div className="flex items-center justify-between bg-white border border-gray-100 rounded px-2 py-1">
+                             <span className="text-gray-400">Speed</span>
+                             <span className="font-bold">{app.speed}</span>
+                           </div>
+                        </div>
+
                         <button
                           onClick={() => {
                             hireEmployee(app.id);
                             // Auto-assign to this store
                             setTimeout(() => assignEmployee(app.id, store.id), 50);
                           }}
-                          className="btn-matcha w-full text-xs py-1.5"
+                          className="w-full py-2 bg-gray-900 text-white text-xs font-bold rounded-lg hover:bg-matcha-600 transition-colors shadow-sm"
                         >
-                          ✅ 採用してこの店舗に配属
+                          採用してこの店舗に配属
                         </button>
                       </div>
                     ))}
@@ -338,31 +492,41 @@ export default function StoreDetailPage() {
 
         {/* === Tab: Marketing (Per-Store) === */}
         {activeTab === 'marketing' && (
-          <div className="space-y-4 animate-fade-in">
-            <div className="game-card p-5">
-              <h2 className="font-bold text-matcha-700 mb-1">📢 {store.name}のマーケティング</h2>
-              <p className="text-xs text-bark-light mb-4">広告キャンペーンで集客力をアップしましょう</p>
+          <div className="space-y-6 animate-fade-in">
+            <div className="game-card p-6">
+              <div className="mb-6">
+                <h2 className="font-bold text-lg text-gray-800">マーケティング施策</h2>
+                <p className="text-xs text-gray-500">広告キャンペーンを実施して集客を強化します</p>
+              </div>
 
               {/* Active Campaigns */}
               {activeCampaigns.length > 0 && (
-                <div className="mb-4">
-                  <h3 className="font-bold text-sm text-matcha-600 mb-2">🔥 実施中のキャンペーン</h3>
-                  <div className="space-y-2">
+                <div className="mb-8">
+                  <h3 className="text-xs font-bold text-matcha-600 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-matcha-500 animate-pulse"></span>
+                    Running Campaigns
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {activeCampaigns.map((campaign) => {
                       const channelData = MARKETING_CHANNELS[campaign.channel];
                       const progress = ((campaign.duration - campaign.remainingWeeks) / campaign.duration) * 100;
                       return (
-                        <div key={campaign.id} className="bg-matcha-50 rounded-lg p-3">
-                          <div className="flex items-center justify-between mb-1">
-                            <h4 className="font-bold text-sm">{channelData.icon} {channelData.name}</h4>
-                            <span className="text-xs text-matcha-600">残り{campaign.remainingWeeks}週</span>
+                        <div key={campaign.id} className="bg-white border border-matcha-200 rounded-xl p-4 shadow-sm relative overflow-hidden">
+                          <div className="absolute top-0 left-0 w-1 h-full bg-matcha-500"></div>
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="font-bold text-sm text-gray-800 flex items-center gap-2">
+                              <span className="text-lg">{channelData.icon}</span> {channelData.name}
+                            </h4>
+                            <span className="text-xs font-bold text-matcha-600 bg-matcha-50 px-2 py-0.5 rounded-full">残り {campaign.remainingWeeks} 週</span>
                           </div>
-                          <div className="progress-bar mb-1">
+                          
+                          <div className="progress-bar mb-2 h-2">
                             <div className="progress-bar-fill bg-matcha-500" style={{ width: `${progress}%` }} />
                           </div>
-                          <div className="flex justify-between text-xs text-bark-light">
-                            <span>効果: ×{campaign.effectiveness}</span>
-                            <span>コスト: {formatMoney(campaign.cost)}</span>
+                          
+                          <div className="flex justify-between text-[10px] text-gray-500 font-medium">
+                            <span>効果: <span className="text-green-600 font-bold">×{campaign.effectiveness}</span></span>
+                            <span>投資額: {formatMoney(campaign.cost)}</span>
                           </div>
                         </div>
                       );
@@ -372,41 +536,55 @@ export default function StoreDetailPage() {
               )}
 
               {/* Available Channels */}
-              <h3 className="font-bold text-sm text-matcha-600 mb-2">📋 広告チャネル</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Available Channels</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {(Object.entries(MARKETING_CHANNELS) as [MarketingChannel, typeof MARKETING_CHANNELS['flyer']][]).map(([key, data]) => {
                   const totalCost = data.weeklyCost * data.duration;
                   const canAfford = company.cash >= totalCost;
                   const isActive = activeCampaigns.some(c => c.channel === key);
                   return (
-                    <div key={key} className={`bg-white rounded-lg p-4 border border-cream-dark ${isActive ? 'opacity-60' : ''}`}>
-                      <div className="flex items-start gap-2 mb-2">
-                        <span className="text-2xl">{data.icon}</span>
+                    <div key={key} className={`bg-white rounded-xl p-4 border transition-all ${
+                      isActive 
+                        ? 'border-matcha-200 bg-matcha-50/30 opacity-60' 
+                        : 'border-gray-200 hover:border-matcha-300 hover:shadow-md'
+                    }`}>
+                      <div className="flex items-start gap-3 mb-3">
+                        <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-xl border border-gray-100">
+                          {data.icon}
+                        </div>
                         <div className="flex-1">
-                          <h4 className="font-bold text-sm text-matcha-700">{data.name}</h4>
-                          <p className="text-[11px] text-bark-light">{data.description}</p>
+                          <h4 className="font-bold text-sm text-gray-800">{data.name}</h4>
+                          <p className="text-[11px] text-gray-500 leading-tight mt-0.5">{data.description}</p>
                         </div>
                       </div>
-                      <div className="grid grid-cols-3 gap-1 text-center text-xs mb-2">
-                        <div className="bg-cream rounded p-1.5">
-                          <p className="text-bark-light">週</p>
-                          <p className="font-bold">{formatMoney(data.weeklyCost)}</p>
-                        </div>
-                        <div className="bg-cream rounded p-1.5">
-                          <p className="text-bark-light">期間</p>
-                          <p className="font-bold">{data.duration}週</p>
-                        </div>
-                        <div className="bg-cream rounded p-1.5">
-                          <p className="text-bark-light">効果</p>
-                          <p className="font-bold text-green-600">×{data.effectiveness}</p>
-                        </div>
+                      
+                      <div className="grid grid-cols-3 gap-2 text-center mb-3">
+                         <div className="bg-gray-50 rounded-lg p-2">
+                           <p className="text-[9px] text-gray-400">期間</p>
+                           <p className="text-xs font-bold text-gray-700">{data.duration}週</p>
+                         </div>
+                         <div className="bg-gray-50 rounded-lg p-2">
+                           <p className="text-[9px] text-gray-400">コスト</p>
+                           <p className="text-xs font-bold text-gray-700">{formatMoney(totalCost)}</p>
+                         </div>
+                         <div className="bg-gray-50 rounded-lg p-2">
+                           <p className="text-[9px] text-gray-400">期待効果</p>
+                           <p className="text-xs font-bold text-green-600">×{data.effectiveness}</p>
+                         </div>
                       </div>
+
                       <button
                         onClick={() => startCampaign(key)}
                         disabled={!canAfford || isActive}
-                        className="btn-matcha w-full text-xs py-1.5"
+                        className={`w-full py-2 text-xs font-bold rounded-lg transition-colors shadow-sm ${
+                           isActive 
+                             ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                             : canAfford
+                               ? 'bg-gray-900 text-white hover:bg-matcha-600'
+                               : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        }`}
                       >
-                        {isActive ? '実施中' : canAfford ? `🚀 開始 (${formatMoney(totalCost)})` : '💸 資金不足'}
+                        {isActive ? '実施中' : canAfford ? 'キャンペーン開始' : '資金不足'}
                       </button>
                     </div>
                   );
@@ -418,22 +596,29 @@ export default function StoreDetailPage() {
 
         {/* === Tab: Menu === */}
         {activeTab === 'menu' && (
-          <div className="space-y-4 animate-fade-in">
-            <div className="game-card p-5">
-              <h2 className="font-bold text-matcha-700 mb-3">📋 メニュー ({store.menu.length}品)</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          <div className="space-y-6 animate-fade-in">
+            <div className="game-card p-6">
+              <h2 className="font-bold text-lg text-gray-800 mb-4">提供メニュー ({store.menu.length}品)</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {store.menu.map((item) => (
-                  <div key={item.id} className="flex items-center justify-between bg-cream rounded-lg p-3">
-                    <div>
-                      <p className="font-medium text-sm">{item.name}</p>
-                      <p className="text-xs text-bark-light">原価: ¥{item.cost} | 利益: ¥{item.price - item.cost}</p>
+                  <div key={item.id} className="flex items-center justify-between bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-cream-dark flex items-center justify-center text-xl">
+                        🍵
+                      </div>
+                      <div>
+                        <p className="font-bold text-sm text-gray-800">{item.name}</p>
+                        <p className="text-[10px] text-gray-500">原価: ¥{item.cost} / 利益: <span className="text-green-600 font-bold">¥{item.price - item.cost}</span></p>
+                      </div>
                     </div>
-                    <div className="font-bold text-matcha-700">¥{item.price}</div>
+                    <div className="font-black text-lg text-matcha-700">¥{item.price}</div>
                   </div>
                 ))}
               </div>
               {store.menu.length === 0 && (
-                <p className="text-sm text-bark-light text-center py-4">メニューが設定されていません</p>
+                <div className="text-center py-10 bg-gray-50 rounded-xl border border-dashed border-gray-300">
+                  <p className="text-gray-400 text-sm">メニューが設定されていません</p>
+                </div>
               )}
             </div>
           </div>
@@ -441,37 +626,60 @@ export default function StoreDetailPage() {
 
         {/* === Tab: Reviews === */}
         {activeTab === 'reviews' && (
-          <div className="space-y-4 animate-fade-in">
-            <div className="game-card p-5">
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="font-bold text-matcha-700">⭐ 顧客レビュー</h2>
+          <div className="space-y-6 animate-fade-in">
+            <div className="game-card p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="font-bold text-lg text-gray-800">顧客レビュー</h2>
+                  <p className="text-xs text-gray-500">AIが生成したリアルな顧客の声</p>
+                </div>
                 <button
                   onClick={handleGenerateReviews}
                   disabled={loadingReviews}
-                  className="btn-outline text-sm"
+                  className="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-xs font-bold rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all flex items-center gap-2 disabled:opacity-50 disabled:hover:scale-100"
                 >
-                  {loadingReviews ? '🔄 生成中...' : '🤖 AIレビュー生成'}
+                  {loadingReviews ? (
+                    <>
+                      <span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                      生成中...
+                    </>
+                  ) : (
+                    <>
+                      <span>✨</span> 新しいレビューを受信
+                    </>
+                  )}
                 </button>
               </div>
 
               {recentReviews.length === 0 ? (
-                <p className="text-sm text-bark-light text-center py-4">
-                  まだレビューがありません。AIレビュー生成ボタンを押してみましょう！
-                </p>
+                <div className="text-center py-12 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+                  <span className="text-4xl block mb-2 opacity-50">💭</span>
+                  <p className="text-sm text-gray-500">まだレビューがありません。</p>
+                  <p className="text-xs text-gray-400 mt-1">「新しいレビューを受信」ボタンを押して、お客様の声を聞いてみましょう。</p>
+                </div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {recentReviews.map((review) => (
-                    <div key={review.id} className="bg-cream rounded-lg p-3">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="font-medium text-sm">{review.customerName}</span>
-                        <span className="text-sm">
-                          {Array.from({ length: 5 }, (_, i) => (
-                            <span key={i} className={i < review.rating ? 'star-filled' : 'star-empty'}>★</span>
-                          ))}
-                        </span>
+                    <div key={review.id} className="flex gap-4 animate-slide-up">
+                      <div className="w-10 h-10 rounded-full bg-gray-200 flex-shrink-0 overflow-hidden border-2 border-white shadow-sm">
+                         <div className="w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center text-white font-bold text-xs">
+                           {review.customerName.charAt(0)}
+                         </div>
                       </div>
-                      <p className="text-sm text-bark-light">{review.comment}</p>
-                      <p className="text-xs text-bark-light/50 mt-1">Week {review.week}</p>
+                      <div className="flex-1">
+                        <div className="bg-gray-100 rounded-2xl rounded-tl-none p-4 relative">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-bold text-sm text-gray-800">{review.customerName}</span>
+                            <div className="flex gap-0.5 text-xs text-yellow-400">
+                              {Array.from({ length: 5 }, (_, i) => (
+                                <span key={i} className={i < review.rating ? '' : 'text-gray-300'}>★</span>
+                              ))}
+                            </div>
+                          </div>
+                          <p className="text-sm text-gray-700 leading-relaxed">{review.comment}</p>
+                        </div>
+                        <p className="text-[10px] text-gray-400 mt-1 ml-2">Week {review.week}</p>
+                      </div>
                     </div>
                   ))}
                 </div>

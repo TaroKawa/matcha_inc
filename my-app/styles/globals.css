@@ -1,27 +1,48 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-matcha-50: #f0fdf4;
-  --color-matcha-100: #dcfce7;
-  --color-matcha-200: #bbf7d0;
-  --color-matcha-300: #86efac;
-  --color-matcha-400: #4ade80;
-  --color-matcha-500: #4A7C59;
-  --color-matcha-600: #3d6b4a;
-  --color-matcha-700: #2d5236;
-  --color-matcha-800: #1a3a22;
-  --color-matcha-900: #0d2013;
-  --color-cream: #F5F0E1;
-  --color-cream-dark: #E8DFC8;
-  --color-bark: #3E2723;
+  --color-matcha-50: #f7fee7;
+  --color-matcha-100: #ecfccb;
+  --color-matcha-200: #d9f99d;
+  --color-matcha-300: #bef264;
+  --color-matcha-400: #a3e635;
+  --color-matcha-500: #65a30d;
+  --color-matcha-600: #4d7c0f;
+  --color-matcha-700: #3f6212;
+  --color-matcha-800: #365314;
+  --color-matcha-900: #1a2e05;
+  
+  --color-tea-50: #f4fbf7;
+  --color-tea-100: #e2f5ea;
+  --color-tea-200: #c5ead6;
+  --color-tea-300: #98dab8;
+  --color-tea-400: #64c295;
+  --color-tea-500: #41a477;
+  --color-tea-600: #2f835e;
+  --color-tea-700: #27684d;
+  --color-tea-800: #22533f;
+  --color-tea-900: #1d4435;
+
+  --color-cream: #FDFBF7;
+  --color-cream-dark: #F2ECE4;
+  --color-bark: #2C2420;
   --color-bark-light: #5D4037;
-  --font-sans: 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
+  --color-paper: #ffffff;
+  
+  --font-sans: 'Zen Maru Gothic', 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
+  --font-display: 'Yuji Syuku', 'Zen Old Mincho', serif;
 }
 
 body {
   font-family: var(--font-sans);
-  background: var(--color-cream);
+  background-color: var(--color-cream);
+  background-image: 
+    radial-gradient(var(--color-matcha-100) 1px, transparent 1px),
+    radial-gradient(var(--color-matcha-100) 1px, transparent 1px);
+  background-size: 20px 20px;
+  background-position: 0 0, 10px 10px;
   color: var(--color-bark);
+  line-height: 1.6;
 }
 
 /* Custom scrollbar */
@@ -76,39 +97,51 @@ body {
 
 /* Card styles */
 .game-card {
-  background: white;
-  border-radius: 12px;
-  border: 1px solid #e5e1d5;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  transition: all 0.2s ease;
+  background: var(--color-paper);
+  border-radius: 16px;
+  border: 1px solid var(--color-cream-dark);
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.02),
+    0 2px 4px -1px rgba(0, 0, 0, 0.02);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
 }
 
 .game-card:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  box-shadow: 
+    0 10px 15px -3px rgba(45, 82, 54, 0.08),
+    0 4px 6px -2px rgba(45, 82, 54, 0.04);
   transform: translateY(-2px);
+  border-color: var(--color-matcha-200);
 }
 
 .game-card-selected {
-  border-color: var(--color-matcha-500);
-  box-shadow: 0 0 0 2px var(--color-matcha-500);
+  border-color: var(--color-tea-500);
+  box-shadow: 0 0 0 2px var(--color-tea-500);
+  background-color: var(--color-tea-50);
 }
 
 /* Button styles */
 .btn-matcha {
-  background: var(--color-matcha-500);
+  background: linear-gradient(135deg, var(--color-tea-500), var(--color-tea-600));
   color: white;
   padding: 10px 24px;
-  border-radius: 8px;
+  border-radius: 12px;
   font-weight: 600;
   transition: all 0.2s ease;
   cursor: pointer;
-  border: none;
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 2px 4px rgba(47, 131, 94, 0.2);
 }
 
 .btn-matcha:hover {
-  background: var(--color-matcha-600);
+  background: linear-gradient(135deg, var(--color-tea-400), var(--color-tea-500));
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(74, 124, 89, 0.3);
+  box-shadow: 0 4px 12px rgba(47, 131, 94, 0.3);
+}
+
+.btn-matcha:active {
+  transform: translateY(0);
 }
 
 .btn-matcha:disabled {
@@ -116,21 +149,24 @@ body {
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
+  opacity: 0.7;
 }
 
 .btn-outline {
-  background: transparent;
-  color: var(--color-matcha-500);
-  border: 2px solid var(--color-matcha-500);
+  background: white;
+  color: var(--color-tea-600);
+  border: 2px solid var(--color-tea-200);
   padding: 8px 22px;
-  border-radius: 8px;
+  border-radius: 12px;
   font-weight: 600;
   transition: all 0.2s ease;
   cursor: pointer;
 }
 
 .btn-outline:hover {
-  background: var(--color-matcha-50);
+  border-color: var(--color-tea-500);
+  background: var(--color-tea-50);
+  color: var(--color-tea-700);
 }
 
 /* Progress bar */

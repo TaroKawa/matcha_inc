@@ -85,9 +85,7 @@ export default function CityPage() {
   const getStoreForProperty = (propId: string) => stores.find(s => s.propertyId === propId);
 
   const areaDisplayOrder: AreaId[] = ['shibuya', 'marunouchi', 'shimokitazawa', 'asakusa'];
-  const currentAreaName = selectedArea
-    ? AREAS.find(a => a.id === selectedArea)?.name || '東京'
-    : '東京';
+  
   const openStores = stores.filter(s => s.isOpen);
   const hasNotifications = notifications.length > 0;
 
@@ -160,71 +158,75 @@ export default function CityPage() {
     );
 
     return (
-      <div key={areaId} className="mb-2">
+      <div key={areaId} className="mb-6 animate-fade-in">
         {/* Area header */}
-        <div className="flex items-center gap-2 px-4 mb-2 mt-4">
-          <div className="flex items-center gap-2 bg-matcha-800/80 backdrop-blur-sm rounded-lg px-3 py-1.5">
-            <span className="text-lg">{area.icon}</span>
-            <span className="text-white font-bold text-sm">{area.name}</span>
-            <span className="text-white/70 text-xs">— {area.description.slice(0, 20)}...</span>
+        <div className="flex items-center gap-3 px-4 mb-3 mt-4">
+          <div className="flex items-center gap-2 bg-white/90 backdrop-blur-md rounded-full px-4 py-1.5 shadow-sm border border-white/50">
+            <span className="text-xl">{area.icon}</span>
+            <span className="text-gray-800 font-bold text-sm">{area.name}</span>
           </div>
           {areaStoreCount > 0 && (
-            <span className="bg-matcha-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold shadow">
-              🏪 {areaStoreCount}店舗
+            <span className="bg-matcha-500 text-white text-[10px] px-2 py-1 rounded-full font-bold shadow-sm">
+              {areaStoreCount}店舗
             </span>
           )}
+          <div className="h-px bg-white/30 flex-1 ml-2"></div>
         </div>
 
         {/* Sidewalk + buildings */}
         <div className="relative">
           {/* Sidewalk */}
-          <div className="bg-gray-300 rounded-lg mx-2 pt-3 pb-1 px-3">
+          <div className="bg-[#e0e0e0] rounded-xl mx-2 pt-4 pb-1 px-4 shadow-inner border-t border-white/40">
             {/* Buildings row */}
-            <div className="flex items-end gap-2 overflow-x-auto pb-2 justify-start" style={{ minHeight: '160px' }}>
+            <div className="flex items-end gap-3 overflow-x-auto pb-2 justify-start no-scrollbar" style={{ minHeight: '180px' }}>
               {buildingElements}
             </div>
           </div>
 
           {/* Curb */}
-          <div className="mx-2 h-[3px] bg-gray-400 rounded-b-sm" />
+          <div className="mx-2 h-[4px] bg-[#bdbdbd] rounded-b-sm shadow-sm" />
 
           {/* Road */}
-          <div className="mx-0 relative overflow-hidden" style={{ height: '40px' }}>
+          <div className="mx-0 relative overflow-hidden my-0.5 shadow-inner" style={{ height: '50px' }}>
             {/* Asphalt */}
-            <div className="absolute inset-0 bg-gray-600" />
+            <div className="absolute inset-0 bg-[#455A64]" />
 
             {/* Center line (dashed) */}
-            <div className="absolute top-1/2 -translate-y-1/2 left-0 right-0 h-[2px] flex gap-3 px-2">
+            <div className="absolute top-1/2 -translate-y-1/2 left-0 right-0 h-[2px] flex gap-4 px-2">
               {Array.from({ length: 30 }).map((_, i) => (
-                <div key={i} className="w-4 h-[2px] bg-yellow-400 flex-shrink-0" />
+                <div key={i} className="w-6 h-[2px] bg-yellow-400/80 flex-shrink-0" />
               ))}
             </div>
 
             {/* Edge lines */}
-            <div className="absolute top-[4px] left-0 right-0 h-[1px] bg-white/40" />
-            <div className="absolute bottom-[4px] left-0 right-0 h-[1px] bg-white/40" />
+            <div className="absolute top-[6px] left-0 right-0 h-[1px] bg-white/30" />
+            <div className="absolute bottom-[6px] left-0 right-0 h-[1px] bg-white/30" />
 
             {/* Cars */}
-            <div className="absolute top-[8px] flex gap-16 px-8">
+            <div className="absolute top-[10px] flex gap-20 px-8 w-[200%] animate-slide-right">
               <Car color={CAR_COLORS[areaId.charCodeAt(0) % CAR_COLORS.length]} />
               <Car color={CAR_COLORS[(areaId.charCodeAt(1) + 2) % CAR_COLORS.length]} />
               <Car color={CAR_COLORS[(areaId.charCodeAt(2) + 4) % CAR_COLORS.length]} />
+              <Car color={CAR_COLORS[(areaId.charCodeAt(0) + 1) % CAR_COLORS.length]} />
             </div>
-            <div className="absolute bottom-[8px] flex gap-20 px-24">
+            <div className="absolute bottom-[10px] flex gap-24 px-24 w-[200%] animate-slide-left">
               <div className="scale-x-[-1]">
                 <Car color={CAR_COLORS[(areaId.charCodeAt(0) + 3) % CAR_COLORS.length]} />
               </div>
               <div className="scale-x-[-1]">
                 <Car color={CAR_COLORS[(areaId.charCodeAt(1) + 5) % CAR_COLORS.length]} />
               </div>
+              <div className="scale-x-[-1]">
+                <Car color={CAR_COLORS[(areaId.charCodeAt(2) + 6) % CAR_COLORS.length]} />
+              </div>
             </div>
           </div>
 
           {/* Curb bottom */}
-          <div className="mx-2 h-[3px] bg-gray-400 rounded-t-sm" />
+          <div className="mx-2 h-[4px] bg-[#bdbdbd] rounded-t-sm shadow-sm" />
 
           {/* Opposite sidewalk with trees/park */}
-          <div className="bg-gray-300 rounded-lg mx-2 py-2 px-3 flex items-end gap-3 overflow-x-auto">
+          <div className="bg-[#e0e0e0] rounded-xl mx-2 py-3 px-4 flex items-end gap-4 overflow-x-auto shadow-sm border-b border-black/10 no-scrollbar">
             <Park />
             <DecorativeBuilding {...decos[3]} />
             <Tree size="sm" />
@@ -242,82 +244,93 @@ export default function CityPage() {
   };
 
   return (
-    <div className="h-screen flex flex-col relative overflow-hidden">
-      {/* Sky */}
-      <div className="absolute inset-0 city-sky" />
-
-      {/* Clouds */}
-      <div className="absolute top-6 left-[8%] text-white/25 text-6xl select-none">☁</div>
-      <div className="absolute top-10 right-[12%] text-white/15 text-5xl select-none">☁</div>
-      <div className="absolute top-3 left-[50%] text-white/20 text-4xl select-none">☁</div>
-      <div className="absolute top-14 left-[30%] text-white/10 text-3xl select-none">☁</div>
+    <div className="h-screen flex flex-col relative overflow-hidden font-sans">
+      {/* Sky Background */}
+      <div className="absolute inset-0 bg-gradient-to-b from-sky-300 via-sky-100 to-white" />
+      
+      {/* Animated Clouds */}
+      <div className="absolute top-10 left-[10%] opacity-40 animate-pulse-slow">
+        <span className="text-6xl text-white drop-shadow-md">☁</span>
+      </div>
+      <div className="absolute top-20 right-[15%] opacity-30 animate-pulse-slow" style={{ animationDelay: '1s' }}>
+        <span className="text-5xl text-white drop-shadow-md">☁</span>
+      </div>
+      <div className="absolute top-5 left-[60%] opacity-20 animate-pulse-slow" style={{ animationDelay: '2s' }}>
+        <span className="text-4xl text-white drop-shadow-md">☁</span>
+      </div>
 
       {/* === Top HUD === */}
       {/* Company info (left) */}
-      <div className="absolute top-3 left-3 z-30">
-        <div className="city-info-badge rounded-xl px-3 py-2 flex items-center gap-2">
-          <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-lg">
+      <div className="absolute top-4 left-4 z-30">
+        <div className="bg-white/80 backdrop-blur-md rounded-2xl p-1.5 pr-4 flex items-center gap-3 shadow-lg border border-white/50 hover:bg-white/90 transition-all cursor-pointer group">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-matcha-500 to-matcha-700 flex items-center justify-center text-xl shadow-inner group-hover:scale-105 transition-transform text-white">
             {logo?.emoji || '🍵'}
           </div>
           <div>
-            <p className="text-white font-bold text-xs leading-tight">{company.name || 'Matcha Inc.'}</p>
-            <p className="text-green-300 font-bold text-xs leading-tight">{formatMoney(company.cash)}</p>
+            <p className="text-gray-800 font-bold text-xs leading-tight">{company.name || 'Matcha Inc.'}</p>
+            <p className="text-matcha-600 font-black text-sm leading-tight tracking-tight mt-0.5">{formatMoney(company.cash)}</p>
           </div>
         </div>
       </div>
 
       {/* Next week (center) */}
-      <div className="absolute top-3 left-1/2 -translate-x-1/2 z-30">
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 pointer-events-none md:pointer-events-auto">
         <button
           onClick={nextWeek}
-          className="city-info-badge rounded-xl px-4 py-2 text-white font-bold text-xs hover:bg-white/20 transition flex items-center gap-1.5"
+          className="pointer-events-auto bg-matcha-600 text-white rounded-full px-6 py-2.5 font-bold text-sm shadow-lg shadow-matcha-600/30 hover:bg-matcha-500 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 border-2 border-white/20"
         >
-          ⏭️ 次の週へ
+          <span>⏭️</span>
+          <span className="hidden sm:inline">Next Week</span>
         </button>
       </div>
 
-      {/* Date (right) */}
-      <div className="absolute top-3 right-3 z-30">
-        <div className="city-info-badge rounded-xl px-3 py-2">
-          <p className="text-white font-bold text-xs">{getDateString()}</p>
+      {/* Date & Stats (right) */}
+      <div className="absolute top-4 right-4 z-30 flex flex-col items-end gap-2">
+        <div className="bg-white/80 backdrop-blur-md rounded-full px-4 py-2 shadow-lg border border-white/50 text-xs font-bold text-gray-700 flex items-center gap-2">
+          <span>📅</span>
+          <span>{getDateString()}</span>
+          <span className="w-px h-3 bg-gray-300 mx-1"></span>
+          <span className="text-matcha-600">Week {currentWeek}</span>
         </div>
-      </div>
 
-      {/* Notification bell */}
-      {hasNotifications && (
-        <div className="absolute top-3 right-36 z-30">
+        {/* Notification bell */}
+        {hasNotifications && (
           <button
             onClick={() => setShowNotifications(!showNotifications)}
-            className="city-info-badge rounded-xl px-2.5 py-2 text-white relative text-sm"
+            className="bg-white/90 backdrop-blur-md rounded-full w-10 h-10 flex items-center justify-center shadow-lg border border-white/50 text-xl relative hover:scale-110 transition-transform"
           >
             🔔
-            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full text-[8px] flex items-center justify-center font-bold text-white">
+            <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-[10px] flex items-center justify-center font-bold text-white border-2 border-white animate-bounce">
               {notifications.length}
             </span>
           </button>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Notification dropdown */}
       {showNotifications && notifications.length > 0 && (
-        <div className="absolute top-14 right-3 z-40 w-72">
-          <div className="bg-white rounded-xl shadow-2xl overflow-hidden">
-            <div className="bg-matcha-700 text-white px-3 py-1.5 flex items-center justify-between">
-              <span className="font-bold text-xs">📢 通知</span>
-              <button onClick={() => setShowNotifications(false)} className="text-white/70 hover:text-white text-sm">✕</button>
+        <div className="absolute top-20 right-4 z-40 w-80 animate-slide-up">
+          <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl overflow-hidden border border-white/50">
+            <div className="bg-gray-50 px-4 py-3 flex items-center justify-between border-b border-gray-100">
+              <span className="font-bold text-xs text-gray-500 uppercase tracking-wider">NOTIFICATIONS</span>
+              <button onClick={() => setShowNotifications(false)} className="text-gray-400 hover:text-gray-600">✕</button>
             </div>
-            <div className="max-h-48 overflow-y-auto">
+            <div className="max-h-64 overflow-y-auto p-2 space-y-2">
               {notifications.map((notif) => (
                 <div
                   key={notif.id}
-                  className={`px-3 py-2 border-b border-cream text-xs ${
-                    notif.type === 'opportunity' ? 'bg-green-50' :
-                    notif.type === 'crisis' ? 'bg-red-50' :
-                    'bg-blue-50'
+                  className={`p-3 rounded-xl text-xs border ${
+                    notif.type === 'opportunity' ? 'bg-green-50 border-green-100' :
+                    notif.type === 'crisis' ? 'bg-red-50 border-red-100' :
+                    'bg-blue-50 border-blue-100'
                   }`}
                 >
-                  <p className="font-bold">{notif.title}</p>
-                  <p className="text-bark-light mt-0.5">{notif.description}</p>
+                  <p className={`font-bold mb-1 ${
+                    notif.type === 'opportunity' ? 'text-green-800' :
+                    notif.type === 'crisis' ? 'text-red-800' :
+                    'text-blue-800'
+                  }`}>{notif.title}</p>
+                  <p className="text-gray-600 leading-relaxed">{notif.description}</p>
                 </div>
               ))}
             </div>
@@ -326,152 +339,129 @@ export default function CityPage() {
       )}
 
       {/* === City Map === */}
-      <div className="flex-1 relative z-10 city-scroll pt-14 pb-16">
-        {/* Green hills at top */}
-        <div className="relative h-12 overflow-hidden">
-          <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-green-500/50 to-transparent rounded-b-[50%]" />
-          <div className="absolute bottom-0 left-[10%] w-24 h-8 bg-green-600/30 rounded-t-full" />
-          <div className="absolute bottom-0 right-[15%] w-20 h-6 bg-green-500/20 rounded-t-full" />
-          {/* Distant trees */}
-          <div className="absolute bottom-0 left-[20%] flex gap-2 items-end">
-            <Tree size="sm" />
-            <Tree size="md" />
-            <Tree size="sm" />
-          </div>
-          <div className="absolute bottom-0 right-[25%] flex gap-2 items-end">
-            <Tree size="md" />
-            <Tree size="sm" />
-          </div>
-        </div>
-
+      <div className="flex-1 relative z-10 city-scroll pt-20 pb-24 px-2 sm:px-4">
+        
         {/* Area tabs */}
-        <div className="sticky top-0 z-20 py-2 px-3 flex gap-1.5 overflow-x-auto bg-gradient-to-b from-sky-200/80 to-transparent backdrop-blur-sm">
+        <div className="sticky top-0 z-20 py-4 flex gap-2 overflow-x-auto no-scrollbar justify-center mb-4">
           <button
             onClick={() => setSelectedArea(null)}
-            className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition shadow-sm ${
-              !selectedArea ? 'bg-matcha-600 text-white' : 'bg-white/90 text-bark-light hover:bg-white'
+            className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all shadow-sm border ${
+              !selectedArea 
+                ? 'bg-gray-800 text-white border-gray-800 scale-105 shadow-md' 
+                : 'bg-white/90 text-gray-500 border-white/50 hover:bg-white hover:text-gray-800'
             }`}
           >
-            🗾 全エリア
+            All Areas
           </button>
           {areaDisplayOrder.map((areaId) => {
             const a = AREAS.find(ar => ar.id === areaId)!;
             const cnt = stores.filter(s => s.areaId === areaId && s.isOpen).length;
+            const isSelected = selectedArea === areaId;
             return (
               <button
                 key={areaId}
-                onClick={() => setSelectedArea(selectedArea === areaId ? null : areaId)}
-                className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition shadow-sm flex items-center gap-1 ${
-                  selectedArea === areaId ? 'bg-matcha-600 text-white' : 'bg-white/90 text-bark-light hover:bg-white'
-                }`}
+                onClick={() => setSelectedArea(isSelected ? null : areaId)}
+                className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all shadow-sm flex items-center gap-1.5 border ${
+                  isSelected 
+                    ? 'bg-matcha-600 text-white border-matcha-600 scale-105 shadow-md' 
+                    : 'bg-white/90 text-gray-500 border-white/50 hover:bg-white hover:text-gray-800'
+            }`}
               >
-                {a.icon} {a.name}
-                {cnt > 0 && <span className="bg-matcha-400 text-white text-[9px] px-1 rounded-full">{cnt}</span>}
+                <span>{a.icon}</span>
+                <span>{a.name}</span>
+                {cnt > 0 && (
+                  <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ml-1 ${
+                    isSelected ? 'bg-white text-matcha-600' : 'bg-matcha-100 text-matcha-600'
+                  }`}>{cnt}</span>
+                )}
               </button>
             );
           })}
         </div>
 
         {/* City blocks */}
-        <div className="mt-2">
+        <div className="pb-10 max-w-5xl mx-auto">
           {(selectedArea ? [selectedArea] : areaDisplayOrder).map(renderCityBlock)}
-        </div>
-
-        {/* Bottom stats */}
-        <div className="grid grid-cols-4 gap-2 mx-3 mt-4 mb-6">
-          <div className="bg-white/85 backdrop-blur rounded-lg p-2 text-center shadow-sm">
-            <p className="text-[10px] text-bark-light">🏪 店舗</p>
-            <p className="text-sm font-bold text-matcha-700">{openStores.length}</p>
-          </div>
-          <div className="bg-white/85 backdrop-blur rounded-lg p-2 text-center shadow-sm">
-            <p className="text-[10px] text-bark-light">💰 週利益</p>
-            <p className={`text-xs font-bold ${company.weeklyRevenue - company.weeklyExpenses >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              {formatMoney(company.weeklyRevenue - company.weeklyExpenses)}
-            </p>
-          </div>
-          <div className="bg-white/85 backdrop-blur rounded-lg p-2 text-center shadow-sm">
-            <p className="text-[10px] text-bark-light">⭐ 評判</p>
-            <p className="text-sm font-bold text-matcha-700">{Math.round(company.brandReputation)}</p>
-          </div>
-          <div className="bg-white/85 backdrop-blur rounded-lg p-2 text-center shadow-sm">
-            <p className="text-[10px] text-bark-light">📅 Week</p>
-            <p className="text-sm font-bold text-matcha-700">{currentWeek}</p>
-          </div>
         </div>
       </div>
 
       {/* === Bottom Bar === */}
-      <div className="absolute bottom-0 left-0 right-0 z-30 city-bottom-bar">
-        <div className="flex items-center justify-between px-5 py-2.5">
-          <Link href="/dashboard" className="flex flex-col items-center gap-0.5 active:scale-95 transition">
-            <span className="text-lg">📊</span>
-            <span className="text-[9px] text-white/70">ダッシュボード</span>
-          </Link>
-          <div className="flex items-center gap-2">
-            <span className="text-base">🗾</span>
-            <span className="text-white font-bold text-sm">{currentAreaName}</span>
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 w-[95%] max-w-2xl">
+        <div className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-xl border border-white/40 p-1.5 flex items-center justify-between">
+          <div className="flex items-center gap-1">
+             <Link 
+              href="/dashboard" 
+              className="flex flex-col items-center justify-center w-14 h-14 rounded-xl hover:bg-white/50 transition-colors group"
+            >
+              <span className="text-xl group-hover:-translate-y-1 transition-transform duration-300">📊</span>
+              <span className="text-[9px] font-bold text-gray-500 group-hover:text-matcha-600">Dash</span>
+            </Link>
+            <div className="w-px h-8 bg-gray-200 mx-1"></div>
+            
+             <button 
+              onClick={() => setShowMenu(!showMenu)}
+              className="flex flex-col items-center justify-center w-14 h-14 rounded-xl hover:bg-white/50 transition-colors group"
+            >
+              <span className="text-xl group-hover:-translate-y-1 transition-transform duration-300">☰</span>
+              <span className="text-[9px] font-bold text-gray-500 group-hover:text-matcha-600">Menu</span>
+            </button>
           </div>
-          <button onClick={() => setShowMenu(!showMenu)} className="flex flex-col items-center gap-0.5 active:scale-95 transition">
-            <span className="text-lg">☰</span>
-            <span className="text-[9px] text-white/70">メニュー</span>
-          </button>
+
+          <div className="flex items-center gap-4 px-4">
+             <div className="text-center hidden sm:block">
+              <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">Stores</p>
+              <p className="text-lg font-black text-gray-800 leading-none">{openStores.length}</p>
+            </div>
+            <div className="text-center hidden sm:block">
+              <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">Revenue</p>
+              <p className={`text-lg font-black leading-none ${company.weeklyRevenue >= 0 ? 'text-green-600' : 'text-gray-800'}`}>
+                {formatMoney(company.weeklyRevenue)}
+              </p>
+            </div>
+             <div className="text-center">
+              <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">Reputation</p>
+              <p className="text-lg font-black text-matcha-600 leading-none">{Math.round(company.brandReputation)}</p>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* === Side Menu === */}
+      {/* === Side Menu Overlay === */}
       {showMenu && (
-        <div className="fixed inset-0 z-50" onClick={() => setShowMenu(false)}>
-          <div className="absolute inset-0 bg-black/40" />
+        <div className="fixed inset-0 z-50 overflow-hidden" onClick={() => setShowMenu(false)}>
+          <div className="absolute inset-0 bg-black/20 backdrop-blur-sm animate-fade-in" />
           <div
-            className="absolute right-0 top-0 bottom-0 w-64 side-menu text-white p-5 animate-fade-in"
+            className="absolute bottom-24 left-1/2 -translate-x-1/2 w-[90%] max-w-sm bg-white rounded-2xl shadow-2xl p-4 animate-slide-up border border-gray-100"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-base font-bold">📋 メニュー</h2>
-              <button onClick={() => setShowMenu(false)} className="text-white/70 hover:text-white text-lg">✕</button>
+            <div className="flex items-center justify-between mb-4 px-2">
+              <h2 className="text-sm font-bold text-gray-800 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-matcha-500"></span>
+                Quick Menu
+              </h2>
+              <button onClick={() => setShowMenu(false)} className="text-gray-400 hover:text-gray-800">✕</button>
             </div>
-            <nav className="space-y-1">
+            
+            <div className="grid grid-cols-3 gap-3">
               {[
-                { href: '/dashboard', icon: '📊', label: 'ダッシュボード' },
-                { href: '/real-estate', icon: '🏠', label: '物件探し' },
-                { href: '/hr', icon: '👥', label: '人事管理' },
-                { href: '/market', icon: '📢', label: 'マーケティング' },
-                { href: '/finance', icon: '💰', label: '財務' },
-                { href: '/supply-chain', icon: '🍃', label: '仕入れ' },
+                { href: '/dashboard', icon: '📊', label: 'Dashboard' },
+                { href: '/real-estate', icon: '🏠', label: 'Real Estate' },
+                { href: '/hr', icon: '👥', label: 'HR' },
+                { href: '/market', icon: '📢', label: 'Marketing' },
+                { href: '/finance', icon: '💰', label: 'Finance' },
+                { href: '/supply-chain', icon: '🍃', label: 'Supply' },
               ].map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/10 transition text-sm"
+                  className="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-50 hover:bg-matcha-50 hover:text-matcha-700 transition-colors border border-transparent hover:border-matcha-200"
                   onClick={() => setShowMenu(false)}
                 >
-                  <span>{item.icon}</span>
-                  <span className="font-medium">{item.label}</span>
+                  <span className="text-2xl mb-1">{item.icon}</span>
+                  <span className="text-[10px] font-bold text-gray-500">{item.label}</span>
                 </Link>
               ))}
-            </nav>
-            {openStores.length > 0 && (
-              <div className="mt-5 pt-5 border-t border-white/20">
-                <h3 className="text-xs font-bold text-white/50 mb-2">🏪 店舗一覧</h3>
-                {openStores.map((s) => {
-                  const a = AREAS.find(ar => ar.id === s.areaId);
-                  return (
-                    <Link
-                      key={s.id}
-                      href={`/store/${s.id}`}
-                      className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10 transition text-sm"
-                      onClick={() => setShowMenu(false)}
-                    >
-                      <span>{a?.icon}</span>
-                      <div>
-                        <p className="text-xs font-medium">{s.name}</p>
-                        <p className="text-[10px] text-white/40">{a?.name}</p>
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
-            )}
+            </div>
           </div>
         </div>
       )}
