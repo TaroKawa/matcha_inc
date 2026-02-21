@@ -8,7 +8,6 @@ import {
   Employee,
   GameEvent,
   WeeklyFinance,
-  Rival,
   MenuItem,
   GamePhase,
 } from '@/types/game';
@@ -49,13 +48,23 @@ export function calculateCustomerSatisfaction(store: Store, state: GameState): n
   if (store.setup.hasWifi) satisfaction += 3;
   if (store.setup.hasBgm) satisfaction += 2;
 
-  // Employee skill average
+  // Employee skill average (considering performance multiplier and sabotaging)
   const storeEmployees = state.employees.filter(e => e.assignedStoreId === store.id);
   if (storeEmployees.length > 0) {
-    const avgSkill = storeEmployees.reduce((sum, e) => sum + e.skill, 0) / storeEmployees.length;
-    const avgMotivation = storeEmployees.reduce((sum, e) => sum + e.motivation, 0) / storeEmployees.length;
-    satisfaction += (avgSkill - 50) * 0.2;
-    satisfaction += (avgMotivation - 50) * 0.15;
+    const activeEmployees = storeEmployees.filter(e => !e.isSabotaging);
+    if (activeEmployees.length > 0) {
+      const avgSkill = activeEmployees.reduce((sum, e) => sum + e.skill * e.performanceMultiplier, 0) / activeEmployees.length;
+      const avgMotivation = activeEmployees.reduce((sum, e) => sum + e.motivation, 0) / activeEmployees.length;
+      satisfaction += (avgSkill - 50) * 0.2;
+      satisfaction += (avgMotivation - 50) * 0.15;
+    } else {
+      satisfaction -= 15; // all employees sabotaging
+    }
+    // Penalty for sabotaging employees
+    const sabotagingCount = storeEmployees.filter(e => e.isSabotaging).length;
+    if (sabotagingCount > 0) {
+      satisfaction -= sabotagingCount * 5;
+    }
   } else {
     satisfaction -= 20; // no employees = terrible service
   }
@@ -95,26 +104,19 @@ export function calculateWeeklyCustomers(store: Store, state: GameState): number
   const maxDailyFromSeats = store.setup.seatCount * 4 * 7; // 4 turns per seat per day * 7 days
   baseCustomers = Math.min(baseCustomers, maxDailyFromSeats);
 
-  // Employee capacity (each employee can serve ~50 customers/week)
-  const employeeCount = state.employees.filter(e => e.assignedStoreId === store.id).length;
-  const maxFromEmployees = employeeCount * 50;
-  if (employeeCount > 0) {
+  // Employee capacity (each active employee can serve ~50 customers/week)
+  const activeEmployees = state.employees.filter(e => e.assignedStoreId === store.id && !e.isSabotaging);
+  const maxFromEmployees = activeEmployees.length * 50;
+  if (activeEmployees.length > 0) {
     baseCustomers = Math.min(baseCustomers, maxFromEmployees);
   } else {
-    baseCustomers = 0; // can't operate without staff
+    baseCustomers = 0; // can't operate without active staff
   }
 
   // Marketing boost
   const activeCampaigns = state.campaigns.filter(c => c.isActive);
   for (const campaign of activeCampaigns) {
     baseCustomers *= campaign.effectiveness;
-  }
-
-  // Rival competition effect
-  const activeRivals = state.rivals.filter(r => r.isActive && r.areaId === store.areaId);
-  for (const rival of activeRivals) {
-    const rivalImpact = rival.marketShare * 0.01;
-    baseCustomers *= (1 - rivalImpact);
   }
 
   // Random variance ±15%
@@ -170,6 +172,24 @@ export function calculateStoreExpenses(store: Store, state: GameState): {
   };
 }
 
+// --- Determine if employee is sabotaging this week ---
+function checkEmployeeSabotage(emp: Employee): boolean {
+  // Low motivation = higher chance of sabotaging
+  if (emp.motivation <= 20) return Math.random() < 0.6;
+  if (emp.motivation <= 40) return Math.random() < 0.3;
+  if (emp.motivation <= 60) return Math.random() < 0.1;
+  return false; // High motivation = no sabotage
+}
+
+// --- Calculate performance multiplier based on motivation ---
+function calcPerformanceMultiplier(motivation: number): number {
+  if (motivation >= 80) return 1.3;
+  if (motivation >= 60) return 1.1;
+  if (motivation >= 40) return 1.0;
+  if (motivation >= 20) return 0.8;
+  return 0.6;
+}
+
 // --- Advance Week ---
 export function advanceWeek(state: GameState): GameState {
   const newState = { ...state };
@@ -178,6 +198,27 @@ export function advanceWeek(state: GameState): GameState {
 
   // Update game phase
   newState.gamePhase = getGamePhase(week);
+
+  // Update employees first (sabotage check, performance)
+  newState.employees = newState.employees.map(emp => {
+    const updated = { ...emp };
+    if (updated.assignedStoreId) {
+      updated.weeksEmployed += 1;
+      // Fatigue increases, motivation decreases slightly
+      updated.fatigue = clamp(updated.fatigue + randomBetween(2, 8), 0, 100);
+      updated.motivation = clamp(updated.motivation - randomBetween(1, 5), 0, 100);
+      // Skill slowly improves
+      updated.skill = clamp(updated.skill + randomBetween(0, 2), 0, 100);
+      // Check sabotage
+      updated.isSabotaging = checkEmployeeSabotage(updated);
+      // Update performance multiplier
+      updated.performanceMultiplier = calcPerformanceMultiplier(updated.motivation);
+    } else {
+      updated.isSabotaging = false;
+      updated.performanceMultiplier = 1.0;
+    }
+    return updated;
+  });
 
   // Update each store
   let totalRevenue = 0;
@@ -254,37 +295,24 @@ export function advanceWeek(state: GameState): GameState {
     );
   }
 
-  // Update employees
-  newState.employees = newState.employees.map(emp => {
-    const updated = { ...emp };
-    if (updated.assignedStoreId) {
-      updated.weeksEmployed += 1;
-      // Fatigue increases, motivation decreases slightly
-      updated.fatigue = clamp(updated.fatigue + randomBetween(2, 8), 0, 100);
-      updated.motivation = clamp(updated.motivation - randomBetween(1, 5), 0, 100);
-      // Skill slowly improves
-      updated.skill = clamp(updated.skill + randomBetween(0, 2), 0, 100);
-    }
-    return updated;
-  });
-
-  // Activate rivals based on week
-  newState.rivals = newState.rivals.map(rival => {
-    if (!rival.isActive && rival.appearedWeek <= week) {
-      return { ...rival, isActive: true, marketShare: randomBetween(5, 15) };
-    }
-    if (rival.isActive) {
-      // Rival market share fluctuates
-      const delta = randomBetween(-3, 3);
-      return { ...rival, marketShare: clamp(rival.marketShare + delta, 0, 40) };
-    }
-    return rival;
-  });
-
   // Generate events
   const newEvents = generateWeeklyEvents(newState);
   newState.events = [...newState.events, ...newEvents];
   newState.notifications = newEvents;
+
+  // Add sabotage notifications
+  const sabotagingEmps = newState.employees.filter(e => e.isSabotaging && e.assignedStoreId);
+  for (const emp of sabotagingEmps) {
+    const store = newState.stores.find(s => s.id === emp.assignedStoreId);
+    newState.notifications.push({
+      id: `sabotage-${week}-${emp.id}`,
+      type: 'crisis',
+      title: `😴 ${emp.name}がサボっています`,
+      description: `${store?.name || ''}で${emp.name}がサボっているようです。声をかけてみましょう。`,
+      week,
+      resolved: false,
+    });
+  }
 
   // Apply event effects
   for (const event of newEvents) {
@@ -428,23 +456,10 @@ function generateWeeklyEvents(state: GameState): GameEvent[] {
     resolved: false,
   });
 
-  // Rival events
-  const newRivals = state.rivals.filter(r => r.appearedWeek === week);
-  for (const rival of newRivals) {
-    events.push({
-      id: `rival-${week}-${generateId()}`,
-      type: 'rival',
-      title: `⚔️ 新しい競合店「${rival.companyName}」がオープン！`,
-      description: `${rival.ceoName}率いる${rival.companyName}が${rival.areaId === 'shibuya' ? '渋谷' : rival.areaId === 'marunouchi' ? '丸の内' : rival.areaId === 'shimokitazawa' ? '下北沢' : '浅草'}に出店。戦略: ${rival.strategy}`,
-      week,
-      resolved: false,
-    });
-  }
-
   return events;
 }
 
-// --- Generate Random Employee ---
+// --- Generate Random Employee (with new fields) ---
 export function generateRandomEmployee(
   names: string[],
   backgrounds: string[],
@@ -456,6 +471,8 @@ export function generateRandomEmployee(
     age: randomBetween(18, 55),
     background: backgrounds[Math.floor(Math.random() * backgrounds.length)],
     personality: personalities[Math.floor(Math.random() * personalities.length)],
+    hiddenPersonality: '', // Will be filled by Gemini
+    resume: '', // Will be filled by Gemini
     role: Math.random() > 0.8 ? 'manager' : 'barista',
     skill: randomBetween(20, 80),
     speed: randomBetween(30, 90),
@@ -464,6 +481,12 @@ export function generateRandomEmployee(
     hourlyWage: randomBetween(1000, 2000),
     assignedStoreId: null,
     weeksEmployed: 0,
+    hiringStatus: 'new',
+    interviewMotivationBonus: 0,
+    interviewConversation: [],
+    isSabotaging: false,
+    performanceMultiplier: 1.0,
+    talkHistory: [],
   };
 }
 

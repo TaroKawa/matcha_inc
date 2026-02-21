@@ -86,13 +86,21 @@ export interface Store {
 
 // --- Employees ---
 export type EmployeeRole = 'barista' | 'manager';
+export type HiringStatus = 'new' | 'resume_viewed' | 'interviewing' | 'interviewed' | 'hired' | 'rejected';
+
+export interface ConversationMessage {
+  role: 'player' | 'employee';
+  content: string;
+}
 
 export interface Employee {
   id: string;
   name: string;
   age: number;
   background: string;
-  personality: string;
+  personality: string; // 表面的な性格（表示用）
+  hiddenPersonality: string; // Gemini生成の隠しパーソナリティ（プレイヤーには非表示）
+  resume: string; // Gemini生成の履歴書（今後の活躍ぶりのヒント含む）
   role: EmployeeRole;
   skill: number; // 1-100
   speed: number; // 1-100
@@ -101,6 +109,14 @@ export interface Employee {
   hourlyWage: number;
   assignedStoreId: string | null;
   weeksEmployed: number;
+  // 採用フロー
+  hiringStatus: HiringStatus;
+  interviewMotivationBonus: number; // 面接でのやり取りによるモチベーション補正
+  interviewConversation: ConversationMessage[]; // 面接の会話履歴
+  // 雇用後
+  isSabotaging: boolean; // サボり中かどうか
+  performanceMultiplier: number; // パフォーマンス倍率（やる気に基づく）
+  talkHistory: ConversationMessage[]; // 声かけの会話履歴
 }
 
 // --- Reviews ---
@@ -113,23 +129,8 @@ export interface Review {
   week: number;
 }
 
-// --- Rivals ---
-export interface Rival {
-  id: string;
-  companyName: string;
-  ceoName: string;
-  strategy: string;
-  description: string;
-  areaId: AreaId;
-  priceLevel: 'low' | 'medium' | 'high';
-  quality: number; // 1-100
-  marketShare: number;
-  isActive: boolean;
-  appearedWeek: number;
-}
-
 // --- Events ---
-export type EventType = 'opportunity' | 'crisis' | 'neutral' | 'rival';
+export type EventType = 'opportunity' | 'crisis' | 'neutral';
 
 export interface GameEvent {
   id: string;
@@ -218,9 +219,6 @@ export interface GameState {
   // People
   employees: Employee[];
   applicants: Employee[]; // available to hire
-
-  // Competition
-  rivals: Rival[];
 
   // Events
   events: GameEvent[];

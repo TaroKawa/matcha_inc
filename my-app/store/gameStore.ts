@@ -15,11 +15,11 @@ import {
   MarketingChannel,
   Loan,
   Review,
+  ConversationMessage,
 } from '@/types/game';
 import {
   INITIAL_PROPERTIES,
   TEA_SUPPLIERS,
-  INITIAL_RIVALS,
   EMPLOYEE_NAMES,
   EMPLOYEE_BACKGROUNDS,
   EMPLOYEE_PERSONALITIES,
@@ -48,6 +48,9 @@ interface GameActions {
   hireEmployee: (employeeId: string) => void;
   fireEmployee: (employeeId: string) => void;
   assignEmployee: (employeeId: string, storeId: string | null) => void;
+  updateApplicant: (employeeId: string, updates: Partial<Employee>) => void;
+  updateEmployee: (employeeId: string, updates: Partial<Employee>) => void;
+  removeApplicant: (employeeId: string) => void;
 
   // Supply chain
   contractSupplier: (supplierId: string) => void;
@@ -80,7 +83,6 @@ const initialState: GameState = {
   properties: [],
   employees: [],
   applicants: [],
-  rivals: [],
   events: [],
   notifications: [],
   campaigns: [],
@@ -97,11 +99,6 @@ export const useGameStore = create<GameState & GameActions>()(
       ...initialState,
 
       initGame: (company) => {
-        const rivals = INITIAL_RIVALS.map((r, i) => ({
-          ...r,
-          id: `rival-${i}`,
-        }));
-
         // Generate initial applicants
         const applicants = Array.from({ length: 5 }, () =>
           generateRandomEmployee(EMPLOYEE_NAMES, EMPLOYEE_BACKGROUNDS, EMPLOYEE_PERSONALITIES)
@@ -125,7 +122,6 @@ export const useGameStore = create<GameState & GameActions>()(
           properties: [...INITIAL_PROPERTIES],
           employees: [],
           applicants,
-          rivals,
           events: [{
             id: 'event-start',
             type: 'neutral',
@@ -240,8 +236,14 @@ export const useGameStore = create<GameState & GameActions>()(
         const state = get();
         const applicant = state.applicants.find(a => a.id === employeeId);
         if (!applicant) return;
+        // Apply interview motivation bonus
+        const hiredEmployee: Employee = {
+          ...applicant,
+          hiringStatus: 'hired',
+          motivation: Math.min(100, Math.max(0, applicant.motivation + applicant.interviewMotivationBonus)),
+        };
         set({
-          employees: [...state.employees, applicant],
+          employees: [...state.employees, hiredEmployee],
           applicants: state.applicants.filter(a => a.id !== employeeId),
         });
       },
@@ -257,6 +259,28 @@ export const useGameStore = create<GameState & GameActions>()(
           employees: get().employees.map(e =>
             e.id === employeeId ? { ...e, assignedStoreId: storeId } : e
           ),
+        });
+      },
+
+      updateApplicant: (employeeId, updates) => {
+        set({
+          applicants: get().applicants.map(a =>
+            a.id === employeeId ? { ...a, ...updates } : a
+          ),
+        });
+      },
+
+      updateEmployee: (employeeId, updates) => {
+        set({
+          employees: get().employees.map(e =>
+            e.id === employeeId ? { ...e, ...updates } : e
+          ),
+        });
+      },
+
+      removeApplicant: (employeeId) => {
+        set({
+          applicants: get().applicants.filter(a => a.id !== employeeId),
         });
       },
 

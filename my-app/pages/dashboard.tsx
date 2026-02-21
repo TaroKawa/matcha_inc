@@ -111,7 +111,6 @@ export default function DashboardPage() {
                 className={`game-card p-4 border-l-4 ${
                   notif.type === 'opportunity' ? 'border-l-green-500 bg-green-50' :
                   notif.type === 'crisis' ? 'border-l-red-500 bg-red-50' :
-                  notif.type === 'rival' ? 'border-l-orange-500 bg-orange-50' :
                   'border-l-blue-500 bg-blue-50'
                 }`}
               >
@@ -255,7 +254,6 @@ export default function DashboardPage() {
             <Link href="/hr" className="btn-outline text-sm">👥 人事管理</Link>
             <Link href="/supply-chain" className="btn-outline text-sm">🍃 仕入れ</Link>
             <Link href="/market" className="btn-outline text-sm">📢 広告</Link>
-            <Link href="/rivals" className="btn-outline text-sm">⚔️ ライバル</Link>
             <Link href="/finance" className="btn-outline text-sm">💰 財務</Link>
           </div>
         </div>

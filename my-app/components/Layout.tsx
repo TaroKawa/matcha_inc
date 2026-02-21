@@ -18,7 +18,6 @@ const NAV_ITEMS = [
   { href: '/real-estate', label: '物件探し', icon: '🏠' },
   { href: '/hr', label: '人事管理', icon: '👥' },
   { href: '/market', label: 'マーケティング', icon: '📢' },
-  { href: '/rivals', label: 'ライバル', icon: '⚔️' },
   { href: '/finance', label: '財務', icon: '💰' },
   { href: '/supply-chain', label: '仕入れ', icon: '🍃' },
 ];

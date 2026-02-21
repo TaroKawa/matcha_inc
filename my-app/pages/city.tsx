@@ -313,7 +313,7 @@ export default function CityPage() {
                   className={`px-3 py-2 border-b border-cream text-xs ${
                     notif.type === 'opportunity' ? 'bg-green-50' :
                     notif.type === 'crisis' ? 'bg-red-50' :
-                    notif.type === 'rival' ? 'bg-orange-50' : 'bg-blue-50'
+                    'bg-blue-50'
                   }`}
                 >
                   <p className="font-bold">{notif.title}</p>
@@ -436,7 +436,6 @@ export default function CityPage() {
                 { href: '/real-estate', icon: '🏠', label: '物件探し' },
                 { href: '/hr', icon: '👥', label: '人事管理' },
                 { href: '/market', icon: '📢', label: 'マーケティング' },
-                { href: '/rivals', icon: '⚔️', label: 'ライバル' },
                 { href: '/finance', icon: '💰', label: '財務' },
                 { href: '/supply-chain', icon: '🍃', label: '仕入れ' },
               ].map((item) => (

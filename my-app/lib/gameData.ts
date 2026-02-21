@@ -7,7 +7,6 @@ import {
   Property,
   TeaSupplier,
   Employee,
-  Rival,
   TeaBase,
   MilkType,
 } from '@/types/game';
@@ -389,57 +388,6 @@ export const DIFFICULTY_PRESETS = [
   },
 ];
 
-// --- Initial Rivals (appear at different weeks) ---
-export const INITIAL_RIVALS: Omit<Rival, 'id'>[] = [
-  {
-    companyName: '抹茶堂',
-    ceoName: '大山 剛',
-    strategy: '超低価格で客を奪う薄利多売戦略',
-    description: '元チェーン店経営者。価格破壊で市場を荒らす。品質よりも数で勝負。',
-    areaId: 'shibuya',
-    priceLevel: 'low',
-    quality: 40,
-    marketShare: 0,
-    isActive: false,
-    appearedWeek: 5,
-  },
-  {
-    companyName: 'ZEN TEA',
-    ceoName: 'Emily Chen',
-    strategy: 'SNS映え重視の高級路線',
-    description: '元外資系マーケター。Instagramを武器にブランド戦略で攻める。',
-    areaId: 'marunouchi',
-    priceLevel: 'high',
-    quality: 80,
-    marketShare: 0,
-    isActive: false,
-    appearedWeek: 10,
-  },
-  {
-    companyName: '茶々丸',
-    ceoName: '佐藤 美咲',
-    strategy: '地域密着型のおもてなし路線',
-    description: '元茶道師範。お客様一人一人に丁寧な接客。リピーター率が異常に高い。',
-    areaId: 'asakusa',
-    priceLevel: 'medium',
-    quality: 70,
-    marketShare: 0,
-    isActive: false,
-    appearedWeek: 15,
-  },
-  {
-    companyName: 'MATCHA MONSTER',
-    ceoName: '鬼頭 龍之介',
-    strategy: '全エリア同時展開の資本力勝負',
-    description: 'IT企業の元CEO。潤沢な資金で一気にシェアを奪う。',
-    areaId: 'shimokitazawa',
-    priceLevel: 'medium',
-    quality: 65,
-    marketShare: 0,
-    isActive: false,
-    appearedWeek: 25,
-  },
-];
 
 // --- Sample Employee Names ---
 export const EMPLOYEE_NAMES = [
