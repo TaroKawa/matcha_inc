@@ -31,12 +31,19 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-matcha-800 flex flex-col items-center justify-center relative overflow-hidden">
-      {/* Background pattern */}
-      <div className="absolute inset-0 opacity-5">
-        <div className="absolute inset-0" style={{
-          backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,0.1) 35px, rgba(255,255,255,0.1) 70px)`,
-        }} />
-      </div>
+      {/* Background video */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="absolute inset-0 w-full h-full object-cover z-0"
+      >
+        <source src="/matcha_inc_bannar.mp4" type="video/mp4" />
+      </video>
+
+      {/* Dark overlay for text readability */}
+      <div className="absolute inset-0 bg-black/50 z-[1]" />
 
       {/* Steam particles */}
       <div className="absolute top-1/3 left-1/2 -translate-x-1/2">
@@ -56,13 +63,6 @@ export default function Home() {
 
       {/* Main Content */}
       <div className={`text-center z-10 transition-all duration-1000 ${showContent ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-        {/* Logo */}
-        <div className="mb-8">
-          <div className="text-8xl mb-4 animate-pulse-glow inline-block rounded-full p-6 bg-matcha-700/50">
-            🍵
-          </div>
-        </div>
-
         {/* Title */}
         <h1 className="text-6xl font-black text-white mb-3 tracking-tight">
           Matcha Inc.

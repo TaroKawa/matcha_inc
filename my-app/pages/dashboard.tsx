@@ -257,6 +257,27 @@ export default function DashboardPage() {
             <Link href="/finance" className="btn-outline text-sm">💰 財務</Link>
           </div>
         </div>
+
+        {/* Reset */}
+        <div className="game-card p-4 border border-red-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="font-bold text-red-600 text-sm">🔄 最初からやる</h2>
+              <p className="text-xs text-bark-light mt-1">すべてのデータをリセットして最初からやり直します</p>
+            </div>
+            <button
+              onClick={() => {
+                if (window.confirm('本当にリセットしますか？\nすべてのセーブデータが削除されます。')) {
+                  resetGame();
+                  router.push('/');
+                }
+              }}
+              className="px-4 py-2 text-sm bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
+            >
+              リセット
+            </button>
+          </div>
+        </div>
       </div>
     </Layout>
   );
